@@ -1,0 +1,331 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AP Cluster Rearrangement â€“ Spatial Visualizer Portal</title>
+    <meta name="description" content="Interactive spatial dashboard for Andhra Pradesh Cluster Rearrangement Project. Unified cluster mandal view, optional Phase-wise classification, and district mandal labeling." />
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ========== LOADER ========== -->
+<div id="loader">
+    <div style="position:relative;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+        <div class="ping-ring"></div>
+        <div class="spin-ring"></div>
+        <div style="position:absolute;width:12px;height:12px;background:#2563eb;border-radius:50%;box-shadow:0 0 14px #2563eb;"></div>
+    </div>
+    <div style="font-size:16px;font-weight:800;color:#0f172a;text-transform:uppercase;letter-spacing:0.12em;">AP Cluster Portal</div>
+    <div style="font-size:10px;font-weight:600;color:#2563eb;text-transform:uppercase;letter-spacing:0.14em;margin-top:6px;">Loading Mandal Shapefiles & Spatial Data</div>
+    <div id="progressBar"><div id="progressFill"></div></div>
+</div>
+
+<!-- ========== SIDEBAR ========== -->
+<div id="sidebar">
+    <button id="toggleSidebarBtn" class="toggle-sidebar-btn" aria-label="Toggle Sidebar">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+    </button>
+
+    <!-- Header -->
+    <div class="sidebar-header">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <img src="logo.jpg" alt="WASSAN Logo" style="height:52px;width:52px;object-fit:contain;border-radius:8px;background:#fff;padding:3px;box-shadow:0 2px 8px rgba(0,0,0,0.15);flex-shrink:0;" />
+            <div>
+                <div class="brand-title">AP Cluster Portal</div>
+                <div class="brand-subtitle">Spatial Scenarios & Cluster Visualizer</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scrollable Content -->
+    <div class="sidebar-scroll">
+
+        <!-- Search, District Select & Phase Select -->
+        <div>
+            <div class="label-text">Select District & Search</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+
+                <!-- District Dropdown (Auto Zooms, Activates & Labels Selected District Mandals) -->
+                <div class="input-icon-wrap" style="position:relative;">
+                    <select id="districtSelect" class="form-input" style="padding-right:34px; font-weight:700; color:#2563eb;">
+                        <option value="">All Districts (Select to Label & Zoom)</option>
+                    </select>
+                    <svg class="select-arrow" style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </div>
+
+                <!-- Phase Filter Dropdown -->
+                <div class="input-icon-wrap" style="position:relative;">
+                    <select id="phaseSelect" class="form-input" style="padding-right:34px; font-weight:700; color:#059669;">
+                        <option value="">All Phases (Phase 1, 2, 3 & Multi-Phase)</option>
+                        <option value="Phase 1">Phase 1</option>
+                        <option value="Phase 2">Phase 2</option>
+                        <option value="Phase 3">Phase 3</option>
+                        <option value="Multi-Phase">Multi-Phase</option>
+                    </select>
+                    <svg class="select-arrow" style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </div>
+
+                <!-- Search Input -->
+                <div class="input-icon-wrap">
+                    <i class="fa-solid fa-magnifying-glass input-icon" style="font-size:12px;color:#94a3b8;"></i>
+                    <input type="text" id="searchInput" class="form-input" placeholder="Search Mandal or Cluster Name..." />
+                </div>
+            </div>
+        </div>
+
+        <!-- Left Panel: Map Color Classification Actions -->
+        <div class="filter-section-box" style="text-align:center;">
+            <div class="label-text" style="text-align:left; margin-bottom:8px;"><i class="fa-solid fa-palette" style="color:#2563eb;"></i> Map Color Classification</div>
+            <div class="classify-btn-grid">
+                <button class="classify-btn" id="btnClassifyPhase">
+                    <i class="fa-solid fa-layer-group"></i> Classify Phase-Wise
+                </button>
+                <button class="classify-btn classify-btn-scenario" id="btnClassifyScenario">
+                    <i class="fa-solid fa-sliders"></i> Classify Scenario-Wise
+                </button>
+                <button class="classify-btn classify-btn-unified active" id="btnUnifiedColor">
+                    <i class="fa-solid fa-droplet"></i> Unified Color
+                </button>
+            </div>
+            <div id="classificationStatus" style="font-size:10px; color:#64748b; margin-top:8px; font-weight:600;">
+                Current View: <b>Single Unified Cluster Color</b>
+            </div>
+        </div>
+
+        <!-- Left Panel: Scenario Layer Filters -->
+        <div class="filter-section-box">
+            <div class="label-text" style="display:flex;justify-content:space-between;align-items:center;">
+                <span><i class="fa-solid fa-sliders" style="color:#2563eb;"></i> Scenario Filters</span>
+                <span class="reset-link" id="btnResetLayers"><i class="fa-solid fa-rotate-left"></i> Reset</span>
+            </div>
+            
+            <div class="layer-toggle-grid">
+                <label class="toggle-pill pill-existing">
+                    <input type="checkbox" id="chkExisting" checked />
+                    <span class="pill-dot dot-existing"></span>
+                    <span class="pill-label">Existing (Scenario 0)</span>
+                </label>
+                <label class="toggle-pill pill-scenario1">
+                    <input type="checkbox" id="chkScenario1" checked />
+                    <span class="pill-dot dot-scenario1"></span>
+                    <span class="pill-label">Scenario 1 (Rearranged 50)</span>
+                </label>
+                <label class="toggle-pill pill-scenario2">
+                    <input type="checkbox" id="chkScenario2" checked />
+                    <span class="pill-dot dot-scenario2"></span>
+                    <span class="pill-label">Scenario 2 (Additional 50)</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Selection Card (Shows when a Mandal is Clicked) -->
+        <div id="selectionCard">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <div>
+                    <span class="pill" id="selectedPhaseBadge" style="background:rgba(37,99,235,0.12);color:#2563eb;">Selected Mandal</span>
+                    <div id="selectedMandalName" style="font-size:17px;font-weight:800;color:#0f172a;margin-top:4px;line-height:1.1;">â€“</div>
+                    <div id="selectedDistrictName" style="font-size:11px;color:#64748b;margin-top:2px;">â€“</div>
+                </div>
+                <button id="clearSelectionBtn" style="background:#ffffff;border:1px solid #cbd5e1;border-radius:7px;padding:5px;color:#64748b;cursor:pointer;transition:all 0.2s;" title="Clear selection">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div style="border-top:1px solid #e2e8f0;padding-top:10px;">
+                <div class="label-text" style="margin-bottom:6px;">Assigned Scenarios</div>
+                <div id="selectedScenariosBadges" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;"></div>
+
+                <div class="label-text" style="margin-bottom:6px;">IFC Clusters (<span id="selectedClusterCount">0</span>)</div>
+                <ul id="selectedClusterList" style="display:flex;flex-direction:column;gap:5px;max-height:140px;overflow-y:auto;padding-right:4px;"></ul>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div>
+            <div class="tabs-bar">
+                <button id="tabMandalsBtn" class="tab-btn active">Active Mandals</button>
+                <button id="tabAnalyticsBtn" class="tab-btn">Analytics & Breakdown</button>
+            </div>
+
+            <!-- Tab: Mandals & Clusters List -->
+            <div id="tabMandals" style="margin-top:10px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <span class="label-text" style="margin:0;">Mandal Entries</span>
+                    <span id="filteredCount" style="font-size:11px;font-weight:700;color:#2563eb;">Loadingâ€¦</span>
+                </div>
+                <div id="mandalList" style="display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;padding-right:4px;">
+                    <div style="text-align:center;color:#64748b;padding:24px 0;font-size:13px;">Initializing map datasetâ€¦</div>
+                </div>
+            </div>
+
+            <!-- Tab: Analytics -->
+            <div id="tabAnalytics" class="hidden" style="margin-top:10px;">
+                <div class="chart-box" style="margin-bottom:12px;">
+                    <div class="label-text" style="text-align:center;margin-bottom:10px;">Scenario Breakdown</div>
+                    <div style="position:relative;height:180px;">
+                        <canvas id="scenarioChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-box">
+                    <div class="label-text" style="text-align:center;margin-bottom:10px;">Mandals Distribution by Phase</div>
+                    <div style="position:relative;height:180px;">
+                        <canvas id="phaseChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- end sidebar-scroll -->
+
+    <!-- Footer -->
+    <div class="sidebar-footer" style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:9px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">AP GIS Portal Â· 100% Matched</span>
+        <button id="btnOpenAudit" style="background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.3);color:#2563eb;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:700;cursor:pointer;">
+            <i class="fa-solid fa-clipboard-check"></i> Audit Trail
+        </button>
+    </div>
+</div>
+
+<!-- ========== MOBILE MENU BUTTON ========== -->
+<button id="mobileMenuBtn">
+    <i class="fa-solid fa-bars" style="font-size:18px;"></i>
+</button>
+
+<!-- ========== MAP CANVAS ========== -->
+<div id="map"></div>
+
+<!-- ========== BASEMAP SWITCHER (Satellite Default) ========== -->
+<div id="basemapSwitcher" class="basemap-box">
+    <span class="basemap-label">Map Style</span>
+    <select id="basemapSelect" onchange="setBasemap(this.value)">
+        <option value="satellite" selected>Satellite (Imagery)</option>
+        <option value="osm">Roads (OSM)</option>
+        <option value="light">Light Canvas</option>
+        <option value="dark">Dark Canvas</option>
+    </select>
+</div>
+
+<!-- ========== RESET ZOOM BUTTON ========== -->
+<button id="resetZoomBtn" onclick="resetMapZoom()" title="Reset map zoom to Andhra Pradesh">
+    <i class="fa-solid fa-compress-arrows-alt"></i> Reset Zoom
+</button>
+
+<!-- ========== STATS BOX (bottom-left) ========== -->
+<div id="statsBox" class="glass-card">
+    <div class="stat-item">
+        <div class="stat-icon" style="background:rgba(37,99,235,0.12);">
+            <i class="fa-solid fa-map" style="font-size:14px;color:#2563eb;"></i>
+        </div>
+        <div class="stat-text">
+            <div class="stat-value" id="statDistricts">26</div>
+            <div class="stat-label">Districts</div>
+        </div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-icon" style="background:rgba(5,150,105,0.12);">
+            <i class="fa-solid fa-draw-polygon" style="font-size:14px;color:#059669;"></i>
+        </div>
+        <div class="stat-text">
+            <div class="stat-value" id="statMandals">671</div>
+            <div class="stat-label">Total Mandals</div>
+        </div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-icon" style="background:rgba(217,119,6,0.12);">
+            <i class="fa-solid fa-location-dot" style="font-size:14px;color:#d97706;"></i>
+        </div>
+        <div class="stat-text">
+            <div class="stat-value" id="statClusters">203</div>
+            <div class="stat-label">IFC Clusters</div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== LEGEND (bottom-right) ========== -->
+<div id="mapLegend" class="glass-card">
+    <div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid #e2e8f0;" id="legendTitle">AP Cluster Mandals</div>
+    <div id="legendContent" style="display:flex;flex-direction:column;gap:7px;">
+        <div style="display:flex;align-items:center;gap:8px;"><div style="width:12px;height:12px;border-radius:3px;background:#2563eb;flex-shrink:0;"></div><span style="font-size:10px;color:#334155;font-weight:600;">AP Cluster Mandals</span></div>
+        <div style="display:flex;align-items:center;gap:8px;"><div style="width:12px;height:12px;border-radius:3px;border:1px dashed #cbd5e1;flex-shrink:0;"></div><span style="font-size:10px;color:#64748b;font-weight:500;">Unassigned</span></div>
+    </div>
+</div>
+
+<!-- ========== AUDIT MODAL DRAWER ========== -->
+<div id="auditModal" class="modal-overlay hidden">
+    <div class="modal-card">
+        <div class="modal-header">
+            <div>
+                <h2><i class="fa-solid fa-clipboard-check" style="color:#2563eb;"></i> Data Match Audit Trail</h2>
+                <p>100% Data Normalization: Every spreadsheet row matched against LGD GIS shapefile geometries.</p>
+            </div>
+            <button id="btnCloseAudit" class="btn-close">&times;</button>
+        </div>
+
+        <div class="audit-summary-grid">
+            <div class="audit-stat-box">
+                <span class="audit-stat-num" id="auditTotalRows">352</span>
+                <span class="audit-stat-label">Total Input Rows</span>
+            </div>
+            <div class="audit-stat-box success">
+                <span class="audit-stat-num" id="auditMatchedRows">352 (100%)</span>
+                <span class="audit-stat-label">Matched Rows</span>
+            </div>
+            <div class="audit-stat-box warning">
+                <span class="audit-stat-num" id="auditUnmatchedRows">0</span>
+                <span class="audit-stat-label">Unmatched Rows</span>
+            </div>
+        </div>
+
+        <div class="audit-search-bar">
+            <i class="fa-solid fa-filter" style="color:#64748b;"></i>
+            <input type="text" id="auditSearchInput" placeholder="Filter audit trail by sheet, district, mandal..." />
+        </div>
+
+        <div class="modal-body-scroll">
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th>Sheet</th>
+                        <th>Row</th>
+                        <th>Original District</th>
+                        <th>Original Mandal</th>
+                        <th>Match Status</th>
+                        <th>Matched GIS District</th>
+                        <th>Matched GIS Mandal</th>
+                        <th>LGD Code</th>
+                    </tr>
+                </thead>
+                <tbody id="auditTableBody">
+                    <!-- Dynamically populated -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Data Payload -->
+<script src="data/processed_cluster_data.js"></script>
+<!-- Custom App Script -->
+<script src="app.js"></script>
+
+</body>
+</html>
