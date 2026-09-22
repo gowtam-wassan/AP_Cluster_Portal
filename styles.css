@@ -244,45 +244,125 @@ html, body {
 .layer-toggle-grid {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 7px;
     margin-top: 8px;
 }
 
-.toggle-pill {
+/* ── Premium Layer Toggle Row ── */
+.layer-toggle-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
+    gap: 0;
+    border-radius: 10px;
+    border: 1.5px solid #e2e8f0;
     background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
     cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    color: #334155;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
     user-select: none;
-    transition: all 0.2s;
+    position: relative;
 }
 
-.toggle-pill input { display: none; }
-
-.toggle-pill:has(input:checked) {
-    background: rgba(37, 99, 235, 0.08);
-    border-color: rgba(37, 99, 235, 0.3);
-    color: #1e40af;
+.layer-toggle-row:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
-.pill-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    display: inline-block;
+/* Left color accent band */
+.layer-color-band {
+    width: 5px;
+    align-self: stretch;
+    flex-shrink: 0;
+    border-radius: 8px 0 0 8px;
+    opacity: 0.9;
+    transition: width 0.2s;
+}
+
+.layer-toggle-row:has(input:checked) .layer-color-band {
+    width: 6px;
+    opacity: 1;
+}
+
+/* Text info */
+.layer-info {
+    flex: 1;
+    padding: 9px 10px;
+}
+
+.layer-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
+.layer-sub {
+    font-size: 9.5px;
+    font-weight: 500;
+    color: #94a3b8;
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* Tick mark area */
+.layer-tick-wrap {
+    padding: 0 12px 0 6px;
+    display: flex;
+    align-items: center;
     flex-shrink: 0;
 }
 
-.dot-existing { background-color: #0284c7; }
-.dot-scenario1 { background-color: #16a34a; }
-.dot-scenario2 { background-color: #9333ea; }
+.layer-tick-wrap input[type="checkbox"] {
+    display: none;
+}
+
+.layer-tick {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 2px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.layer-tick i {
+    font-size: 10px;
+    color: transparent;
+    transition: all 0.15s ease;
+    transform: scale(0.6);
+}
+
+/* Checked state — tick becomes visible in scenario color */
+.layer-toggle-row:has(input:checked) .layer-tick {
+    background: var(--tick-color);
+    border-color: var(--tick-color);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tick-color) 18%, transparent);
+}
+
+.layer-toggle-row:has(input:checked) .layer-tick i {
+    color: #ffffff;
+    transform: scale(1);
+}
+
+/* Checked row background tint */
+.layer-toggle-row:has(input:checked) {
+    background: #ffffff;
+    border-color: color-mix(in srgb, var(--dummy) 0%, #e2e8f0);
+}
+
+/* Unchecked row dims the name */
+.layer-toggle-row:not(:has(input:checked)) .layer-name {
+    color: #94a3b8;
+}
+.layer-toggle-row:not(:has(input:checked)) .layer-color-band {
+    opacity: 0.25;
+}
 
 /* ==========================================================================
    SELECTION CARD
@@ -640,9 +720,10 @@ html, body {
 .label-text { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
 .pill { display: inline-block; padding: 2px 7px; border-radius: 5px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
 .badge-chip { font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase; }
-.badge-existing { background: rgba(2, 132, 199, 0.15); color: #0284c7; border: 1px solid #0284c7; }
+.badge-existing { background: rgba(236, 72, 153, 0.15); color: #db2777; border: 1px solid #ec4899; }
 .badge-scenario1 { background: rgba(22, 163, 74, 0.15); color: #16a34a; border: 1px solid #16a34a; }
 .badge-scenario2 { background: rgba(147, 51, 234, 0.15); color: #9333ea; border: 1px solid #9333ea; }
+.badge-breads { background: rgba(234, 179, 8, 0.18); color: #b45309; border: 1px solid #eab308; }
 .hidden { display: none !important; }
 
 /* SCROLLBARS */

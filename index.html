@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -111,25 +111,85 @@
         <!-- Left Panel: Scenario Layer Filters -->
         <div class="filter-section-box">
             <div class="label-text" style="display:flex;justify-content:space-between;align-items:center;">
-                <span><i class="fa-solid fa-sliders" style="color:#2563eb;"></i> Scenario Filters</span>
+                <span><i class="fa-solid fa-layer-group" style="color:#2563eb;"></i> Map Layers</span>
                 <span class="reset-link" id="btnResetLayers"><i class="fa-solid fa-rotate-left"></i> Reset</span>
             </div>
-            
+
             <div class="layer-toggle-grid">
-                <label class="toggle-pill pill-existing">
-                    <input type="checkbox" id="chkExisting" checked />
-                    <span class="pill-dot dot-existing"></span>
-                    <span class="pill-label">Existing (Scenario 0)</span>
+
+                <!-- All AP Clusters -->
+                <label class="layer-toggle-row" id="rowAllClusters">
+                    <div class="layer-color-band" style="background:#2563eb;"></div>
+                    <div class="layer-info">
+                        <div class="layer-name">All AP Clusters</div>
+                        <div class="layer-sub">All AP Cluster Mandals</div>
+                    </div>
+                    <div class="layer-tick-wrap">
+                        <input type="checkbox" id="chkAllClusters" checked />
+                        <span class="layer-tick" style="--tick-color:#2563eb;">
+                            <i class="fa-solid fa-check"></i>
+                        </span>
+                    </div>
                 </label>
-                <label class="toggle-pill pill-scenario1">
-                    <input type="checkbox" id="chkScenario1" checked />
-                    <span class="pill-dot dot-scenario1"></span>
-                    <span class="pill-label">Scenario 1 (Rearranged 50)</span>
+
+                <!-- Existing (Scenario 0) -->
+                <label class="layer-toggle-row" id="rowExisting">
+                    <div class="layer-color-band" style="background:#ec4899;"></div>
+                    <div class="layer-info">
+                        <div class="layer-name">Existing</div>
+                        <div class="layer-sub">Scenario 0 &mdash; Base Clusters</div>
+                    </div>
+                    <div class="layer-tick-wrap">
+                        <input type="checkbox" id="chkExisting" />
+                        <span class="layer-tick" style="--tick-color:#ec4899;">
+                            <i class="fa-solid fa-check"></i>
+                        </span>
+                    </div>
                 </label>
-                <label class="toggle-pill pill-scenario2">
-                    <input type="checkbox" id="chkScenario2" checked />
-                    <span class="pill-dot dot-scenario2"></span>
-                    <span class="pill-label">Scenario 2 (Additional 50)</span>
+
+                <!-- Scenario 1 -->
+                <label class="layer-toggle-row" id="rowScenario1">
+                    <div class="layer-color-band" style="background:#16a34a;"></div>
+                    <div class="layer-info">
+                        <div class="layer-name">Scenario 1</div>
+                        <div class="layer-sub">Rearranged 50 Clusters</div>
+                    </div>
+                    <div class="layer-tick-wrap">
+                        <input type="checkbox" id="chkScenario1" />
+                        <span class="layer-tick" style="--tick-color:#16a34a;">
+                            <i class="fa-solid fa-check"></i>
+                        </span>
+                    </div>
+                </label>
+
+                <!-- Scenario 2 -->
+                <label class="layer-toggle-row" id="rowScenario2">
+                    <div class="layer-color-band" style="background:#9333ea;"></div>
+                    <div class="layer-info">
+                        <div class="layer-name">Scenario 2</div>
+                        <div class="layer-sub">Additional 50 Clusters</div>
+                    </div>
+                    <div class="layer-tick-wrap">
+                        <input type="checkbox" id="chkScenario2" />
+                        <span class="layer-tick" style="--tick-color:#9333ea;">
+                            <i class="fa-solid fa-check"></i>
+                        </span>
+                    </div>
+                </label>
+
+                <!-- Breads (33) -->
+                <label class="layer-toggle-row" id="rowBreads">
+                    <div class="layer-color-band" style="background:#eab308;"></div>
+                    <div class="layer-info">
+                        <div class="layer-name">Breads<span style="font-size:9px;font-weight:600;color:#ca8a04;margin-left:5px;background:rgba(234,179,8,0.18);padding:1px 5px;border-radius:4px;">33</span></div>
+                        <div class="layer-sub">Breads Mandals Layer</div>
+                    </div>
+                    <div class="layer-tick-wrap">
+                        <input type="checkbox" id="chkBreads" />
+                        <span class="layer-tick" style="--tick-color:#eab308;">
+                            <i class="fa-solid fa-check"></i>
+                        </span>
+                    </div>
                 </label>
             </div>
         </div>
@@ -164,28 +224,46 @@
 
             <!-- Tab: Mandals & Clusters List -->
             <div id="tabMandals" style="margin-top:10px;">
+                <!-- Active Layer Badges Indicator -->
+                <div id="activeLayerStatus" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; margin-bottom: 10px;">
+                    <div style="font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Active Display Layers:</div>
+                    <div id="activeLayerPills" style="display: flex; flex-wrap: wrap; gap: 4px;">
+                        <span style="font-size:11px; color:#94a3b8; font-style:italic;">None selected</span>
+                    </div>
+                </div>
+
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                     <span class="label-text" style="margin:0;">Mandal Entries</span>
-                    <span id="filteredCount" style="font-size:11px;font-weight:700;color:#2563eb;">Loadingâ€¦</span>
+                    <span id="filteredCount" style="font-size:11px;font-weight:700;color:#2563eb;">Loading...</span>
                 </div>
-                <div id="mandalList" style="display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;padding-right:4px;">
-                    <div style="text-align:center;color:#64748b;padding:24px 0;font-size:13px;">Initializing map datasetâ€¦</div>
+                <div id="mandalList" style="display:flex;flex-direction:column;gap:6px;max-height:290px;overflow-y:auto;padding-right:4px;">
+                    <div style="text-align:center;color:#64748b;padding:24px 0;font-size:13px;">Initializing map dataset...</div>
                 </div>
             </div>
 
             <!-- Tab: Analytics -->
             <div id="tabAnalytics" class="hidden" style="margin-top:10px;">
+                <!-- Summary Stats KPI Cards -->
+                <div id="analyticsSummaryCards" style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;"></div>
+
                 <div class="chart-box" style="margin-bottom:12px;">
-                    <div class="label-text" style="text-align:center;margin-bottom:10px;">Scenario Breakdown</div>
-                    <div style="position:relative;height:180px;">
+                    <div class="label-text" style="text-align:center;margin-bottom:10px;">Mandals per Scenario Layer</div>
+                    <div style="position:relative;height:170px;">
                         <canvas id="scenarioChart"></canvas>
                     </div>
                 </div>
-                <div class="chart-box">
+                
+                <div class="chart-box" style="margin-bottom:12px;">
                     <div class="label-text" style="text-align:center;margin-bottom:10px;">Mandals Distribution by Phase</div>
-                    <div style="position:relative;height:180px;">
+                    <div style="position:relative;height:170px;">
                         <canvas id="phaseChart"></canvas>
                     </div>
+                </div>
+
+                <!-- District Breakdown List -->
+                <div class="chart-box">
+                    <div class="label-text" style="text-align:center;margin-bottom:8px;">Districts by Mandals Count</div>
+                    <div id="districtBreakdownList" style="display:flex; flex-direction:column; gap:4px; max-height:160px; overflow-y:auto;"></div>
                 </div>
             </div>
         </div>
